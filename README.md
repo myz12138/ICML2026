@@ -135,7 +135,7 @@ PY
 You can override planner endpoint settings with:
 - `--api_key`, `--base_url`, `--model_name`
 
-### Step 1: Stage-1 Structural Retrieval (Constraint-based)
+### 1: Structural Retrieval (Constraint-based)+Sufficiency Check+Binding Propagation
 
 Stage-1 consumes `query_json` and retrieves KG triples per constraint.
 
@@ -144,7 +144,7 @@ cd ..
 python -m c2rag.scripts.run_stage1 --dataset musique
 ```
 
-Stage-1 implements:
+implements:
 - **Anchor Matching**: match constraint entities to KG entities (`modules/anchor_matching.py`)
 - **Relation Alignment**: filter candidates by relation similarity (`modules/relation_alignment.py`)
 - **Contextual Reranking**: rerank candidates with a cross-encoder (`modules/contextual_reranking.py`)
@@ -153,7 +153,7 @@ Stage-1 implements:
 
 Output: `stage1_json` (default: `result/<dataset>/stage1_<dataset>.json`).
 
-### Step 2: Stage-2 Textual Recovery + Evidence Assembly
+### 2. Textual Recovery + Evidence Assembly
 
 Stage-2 consumes Stage-1 outputs and builds **per-constraint evidence blocks**:
 
@@ -202,30 +202,6 @@ Common evaluation options:
   - `--prompt_max_text_per_triple`
 - Recall reporting (if enabled):
   - `--recall_k_list` (e.g., `2,5,10`)
-
----
-
-## Configuration
-
-All dataset defaults and hyperparameters live in `configs/config.py`.
-
-Key Stage-1 hyperparameters (paper notation):
-
-- `--top_k_entity` (**E**): top-E anchor entity matches per surface form
-- `--relation_k` (**R**): relation-aligned candidate pool size
-- `--top_n` (**K_s**): keep top-N triples after contextual reranking
-- `--neff_threshold` (**γ**): sufficiency threshold for resolved vs unresolved
-
-Stage-2 (textual recovery) knobs:
-
-- `--topk_resolved`, `--topk_unresolved`
-- `--global_topk_resolved`, `--global_topk_unresolved`
-- `--doc_prefilter_k`, `--unres_top_similar`
-
-Reranker:
-
-- `--rerank_model` (default: `BAAI/bge-reranker-v2-m3`)
-- `--rerank_max_length`, `--rerank_batch`, `--rerank_fp16`
 
 ---
 
