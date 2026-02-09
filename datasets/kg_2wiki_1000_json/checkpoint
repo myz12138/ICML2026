@@ -1,7 +1,0 @@
-{
-  "status": "done",
-  "next_title_idx": 6120,
-  "entities_count": 63122,
-  "triples_count": 63841,
-  "out_dir": "kg_2wiki_1000_json"
-}
