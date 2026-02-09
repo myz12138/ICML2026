@@ -9,15 +9,6 @@ C2RAG targets **robust multi-hop question answering over imperfect knowledge gra
 - **Retrieval drift**: noisy/spurious KG edges gradually divert the retrieval trajectory.
 - **Retrieval hallucination**: missing KG evidence causes the retriever to keep propagating structurally without sufficient support.
 
-C2RAG implements a **constraint-checked retrieval** workflow:
-
-1. **Atomic Constraint Planning**: decompose a complex question into a minimal chain of *atomic constraint triples*.
-2. **Stage-1 Structural Retrieval**: retrieve KG triples per constraint via **anchor matching**, **relation alignment**, and **contextual reranking**, with **sufficiency checking** and **binding propagation**.
-3. **Stage-2 Textual Recovery**: for insufficient/unresolved constraints, recover evidence from the original documents (dense prefilter + cross-encoder rerank).
-
-The output is a **per-constraint evidence set** that can be fed into a reasoning model.
-
----
 
 ## Repository Structure
 
@@ -246,24 +237,3 @@ By default (see `configs/config.py`):
 - `result/<dataset>/stage2_<dataset>.json`: per-constraint evidence blocks (input to evaluation)
 - `result/<dataset>/eval.json`: predictions + EM/F1 + recall (if enabled)
 
----
-
-## Citation
-
-If you use this code, please cite:
-
-```bibtex
-@inproceedings{c2rag2026,
-  title     = {Mitigating KG Quality Issues: A Robust Multi-Hop GraphRAG Retrieval Framework},
-  author    = {Anonymous Authors},
-  booktitle = {International Conference on Machine Learning (ICML)},
-  year      = {2026}
-}
-```
-
----
-
-## Notes
-
-- **Do not commit API keys**. Prefer passing `--api_key` via CLI or using environment variables in your own wrapper.
-- This is research code and prioritizes end-to-end reproducibility. Some components contain best-effort fallbacks.
