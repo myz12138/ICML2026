@@ -1,0 +1,35 @@
+paths:
+  hotpot_train: ./hotpot_data/hotpot_train_v1.1.json
+  hotpot_dev:  ./hotpot_data/hotpot_dev_distractor_v1.json
+
+embed:
+  model: sentence-transformers/all-MiniLM-L6-v2
+  device: cuda:0
+
+seedkg:
+  pages: 2000
+
+model:
+
+  q_dim: 384
+  gnn_hidden: 256
+  gnn_layers: 2
+  vkg_hidden: 256
+
+  vkg_prompt_dim: 384
+
+  mapper_hidden: 512
+
+  freeze_backbone: true
+  use_mapper: false
+train:
+  lr: 0.001
+  lr_gnn: 0.01
+  lr_vkg: 0.001
+
+  batch_size_pretrain: 4
+  batch_size_vkg: 4
+
+  lambda_node: 1.0   
+  lambda_path: 0.05  
+  tau_mapper: 0.1     
