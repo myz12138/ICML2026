@@ -1,12 +1,12 @@
 
 from collections import defaultdict
-
+from ..modules.Atomic_Constraint_Planning import main_query
 from ..kg.index import is_var, ent_name, get_1hop_triples
-from .anchor_matching import map_query_entities, map_surface_to_entity_ids
-from .relation_alignment import top_by_relation
-from .contextual_reranking import rerank_select_topn
-from .sufficiency_check import neff_from_logits, is_resolved
-from .binding_propagation import induced_entities_for_single_var, consolidate_bindings, filter_triples_by_binding
+from ..modules.anchor_matching import map_query_entities, map_surface_to_entity_ids
+from ..modules.relation_alignment import top_by_relation
+from ..modules.contextual_reranking import rerank_select_topn
+from ..modules.sufficiency_check import neff_from_logits, is_resolved
+from ..modules.binding_propagation import induced_entities_for_single_var, consolidate_bindings, filter_triples_by_binding
 
 def run_constraint_retrieval_for_triple(
     enc,
@@ -23,6 +23,8 @@ def run_constraint_retrieval_for_triple(
     stage_tag,
     triple_type_initial,
 ):
+    
+
     cand_ids_all = set()
     for nid in anchor_nodes or []:
         cand_ids_all.update(get_1hop_triples(int(nid), out_index, in_index))
@@ -80,7 +82,11 @@ def run_constraint_retrieval_for_triple(
         "debug": debug,
     }
 
+
+
 def process_item_stage1(item, kg, entities, entity_names, triple_info, out_index, in_index, enc, reranker, args):
+    main_query(args)
+    
     question = item.get("question", "")
     qtriples = item.get("query_plan") or []
 

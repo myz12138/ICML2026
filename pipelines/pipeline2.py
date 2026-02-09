@@ -1,11 +1,11 @@
 
-from ..io import load_list_json
+from ..configs.io import load_list_json
 from ..sim.embedding import build_embedder
 from ..rerank.cross_encoder import build_reranker
 
-from .textual_recovery import retrieve_2wiki_like, retrieve_musique
-from .provenance import tri_in_text
-from .dataset_adapters import iter_context_units_2wiki_like, iter_paragraphs_musique
+from ..modules.textual_recovery import retrieve_2wiki_like, retrieve_musique
+from ..modules.provenance import tri_in_text
+from ..modules.dataset_adapters import iter_context_units_2wiki_like, iter_paragraphs_musique
 
 def load_id2ex(dataset, path):
     data = load_list_json(path)
