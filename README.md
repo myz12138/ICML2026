@@ -8,8 +8,8 @@ C2RAG targets **robust multi-hop question answering over imperfect knowledge gra
 
 - **Retrieval drift**: noisy/spurious KG edges gradually divert the retrieval trajectory.
 - **Retrieval hallucination**: missing KG evidence causes the retriever to keep propagating structurally without sufficient support.
-- 
-![Architecture of C2RAG](./framework.png)
+  
+![Architecture of C2RAG](framework.png)
 
 ## Repository Structure
 
