@@ -4,21 +4,6 @@ import argparse
 from tqdm import tqdm
 from openai import OpenAI
 
-_DEFAULTS = {
-    "2wiki": {
-        "DATA_PATH": "dataset/2wikimultihopqa.json",
-        "OUTPUT_PATH": "result_1.5/2wiki_data_100/query_graph_v8_2wiki.json",
-    },
-    "hotpotqa": {
-        "DATA_PATH": "dataset/hotpotqa.json",
-        "OUTPUT_PATH": "result_1.5/hotpotqa_data_100/query_graph_v8_hotpotqa.json",
-    },
-    "musique": {
-        "DATA_PATH": "dataset/musique.json",
-        "OUTPUT_PATH": "result_1.5/musique_data_100/query_graph_v8_musique.json",
-    },
-}
-
 SYSTEM_PROMPT = """You are an expert in Knowledge Graphs and Question Answering. 
 Your task is to decompose a complex natural language question into a sequence of triples.
 
@@ -85,15 +70,6 @@ Rules:
   ]
 }
 """
-
-def _none_or_int(x):
-    if x is None:
-        return None
-    s = str(x).strip().lower()
-    if s in ("none", "null"):
-        return None
-    return int(x)
-
 
 def load_dataset(path, num_samples):
     data = json.loads(open(path, "r", encoding="utf-8").read())
@@ -191,15 +167,15 @@ def get_query_plan_with_retry(question, client, model_name, max_retries=3):
 def main_query(args):
     client = OpenAI(api_key=args.api_key, base_url=args.base_url)
 
-    data = load_dataset(args.dataset, args.data_path, args.num_samples)
+    data = load_dataset(args.dataset, args.data_json, args.num_samples)
     print(f"[QueryBuilder] dataset={args.dataset} examples={len(data)}")
-    print(f"[QueryBuilder] output={args.output_path}")
+    print(f"[QueryBuilder] output={args.query_json}")
 
-    out_dir = os.path.dirname(args.output_path)
+    out_dir = os.path.dirname(args.query_json)
     if out_dir:
         os.makedirs(out_dir, exist_ok=True)
 
-    with open(args.output_path, "w", encoding="utf-8") as f:
+    with open(args.query_json, "w", encoding="utf-8") as f:
         f.write("[\n")
         first = True
 
@@ -231,22 +207,3 @@ def main_query(args):
 
     print("[QueryBuilder] done.")
 
-
-def build_parser():
-    parser = argparse.ArgumentParser(description="Query Graph Builder (Universal)")
-    parser.add_argument("--api_key", type=str, default="sk-4ErcoxMACExg7eAe3bgpJyV4zXR7Znsis7X1KYjaucgMbElo")
-    parser.add_argument("--base_url", type=str, default="https://api.holdai.top/v1/")
-    parser.add_argument("--model_name", type=str, default="gpt-4o-mini")
-
-    parser.add_argument("--dataset", type=str, choices=sorted(list(_DEFAULTS.keys())), default="musique")
-    parser.add_argument("--num_samples", type=_none_or_int, default=1000, help="Set to None to process all.")
-    parser.add_argument("--sleep_secs", type=float, default=0.5)
-    
-    parser.add_argument("--data_path", type=str, default=_DEFAULTS['musique']["DATA_PATH"])
-    parser.add_argument("--output_path", type=str, default=_DEFAULTS['musique']["OUTPUT_PATH"])
-    return parser
-
-
-if __name__ == "__main__":
-    args = build_parser().parse_args()
-    main_query(args)
