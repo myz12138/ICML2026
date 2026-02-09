@@ -144,45 +144,55 @@ def _format_triple(t):
 
 
 def build_prompt_from_stage2_item(item, args):
+    """
+    Phase-2 item format assumption (as you specified):
+      - item has: id, question, ground_truth_answer
+      - item["triples_evidence"] is a list; each element corresponds to one decomposed query triple and contains:
+          * query_triple, query_triple_index, triple_status
+          * if triple_status == "resolved": kg_triples is non-empty
+          * if triple_status == "unresolved": candidate_evidences is non-empty (text evidences)
+
+    We generate a single prompt by listing the decomposed query triples and, for each, the corresponding evidence set.
+    """
     question = str(item.get("question", "") or "").strip()
-    triples_evidence = item["triples_evidence"] 
+    triples_evidence = item["triples_evidence"]  # no extra guards per requirement
 
     intro = (
-        "You are a strict multi hop inference assistant that can complete multi hop inference based on given information. "
-        "Now, you need to conduct rigorous and rational multi-step thinking based on the given search evidence to answer this question. "
-        "You only need to use the given information to answer the question. "
-        "We decomposed the problem and generated multiple subqueries, and retrieved several relevant evidence for each subquery for you to think and reason about the answer step by step. "
-        "You need to choose the most suitable evidence content as much as possible to solve this unknown tuple, and further deduce the next unknown tuple based on the solved content until you answer the question. "
-        "You can only answer the final answer with short and appropriate phrases (such as names, numbers, or short noun phrases that conform to the question format). "
-        "Do not include explanations, sentences, or any other words. "
-        "Here is the information you can obtain:"
+        "You are a strict multi hop inference assistant that can complete multi hop inference based on given information."
+"Now, you need to conduct rigorous and rational multi-step thinking based on the given search evidence to answer this question. You only need to use the given information to answer the question."
+"We decomposed the problem and generated multiple subqueries, and retrieved several relevant evidence for each subquery for you to think and reason about the answer step by step."
+"You need to choose the most suitable evidence content as much as possible to solve this unknown tuple, and further deduce the next unknown tuple based on the solved content until you answer the question."
+"You can only answer the final answer with short and appropriate phrases (such as names, numbers, or short noun phrases that conform to the question format). Do not include explanations, sentences, or any other words."
+"Here is the information you can obtain:"
+
     )
 
+    dec_lines = []
+    for te in triples_evidence[:args.prompt_max_triple]:
+        qi = int(te["query_triple_index"])
+        qt = _format_triple(te["query_triple"])
+        dec_lines.append(f"T{qi} {qt}")
+
     ev_lines = []
-    for te in triples_evidence[: args.prompt_max_triples]:
+    for te in triples_evidence:
         qi = int(te["query_triple_index"])
         qt = _format_triple(te["query_triple"])
         ev_lines.append(f"T{qi}: {qt}")
-        cand = te.get("candidate_evidences") or []
-        if isinstance(cand, list) and cand:
-            ev_lines.append("  Text evidence:")
-            for i, ev in enumerate(cand[: args.prompt_max_text_per_triple], start=1):
-                ctx = normalize_whitespace(ev.get("context") or ev.get("evidence") or "").strip()
-                if ctx:
-                    ev_lines.append(f"    Evidence {i}: {ctx}")
-
+        ev_lines.append("  Text evidence:")
+        for i, ev in enumerate((te["candidate_evidences"] or [])[: args.prompt_max_text_per_triple], start=1):
+            title = str(ev.get("title", "") or "").strip()
+            ctx = normalize_whitespace(ev.get("context")).strip()
+            ev_lines.append(f"    Evidence {i}: {ctx}")
 
     ev_block = "\n".join(ev_lines)
 
     body = (
         f"Question: {question}\n\n"
-        "The query tuple after problem decomposition is as follows: "
-        "(where the relationship is an approximate query relationship related to the semantics of the problem, "
-        "and the entity is an unknown entity type that needs to be solved based on the provided evidence, not the true answer).\n"
+        f"The query tuple after problem decomposition is as follows: (where the relationship is an approximate query relationship related to the semantics of the problem, and the entity is an unknown entity type that needs to be solved based on the provided evidence, not the true answer).\n"
         f"For each decomposed query triple, the retrieved evidence is as follows:\n{ev_block}\n\n"
-        "Based on the above information, answer the question.\n\n"
+        f"Based on the above information, answer the question.\n\n"
         f"Question: {question} Answer:"
-    )
+    ) 
 
     return intro + "\n" + body
 
