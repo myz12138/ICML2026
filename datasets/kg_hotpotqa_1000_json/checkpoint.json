@@ -1,0 +1,7 @@
+{
+  "status": "done",
+  "next_title_idx": 9221,
+  "entities_count": 113957,
+  "triples_count": 110496,
+  "out_dir": "kg_extractors/kg_hotpotqa_1000_json"
+}
